@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ticket Status</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f4f4f4;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .checkmark {
+            font-size: 3rem;
+            color: green;
+        }
+
+        .message {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="checkmark" th:if="${souvenir != null || makan != null || snack != null}">✔️</div>
+    <h2>Ticket Info</h2>
+    <p th:if="${name != null}">Nama: <strong th:text="${name}"></strong></p>
+    <p th:if="${nik != null}">NIK: <strong th:text="${nik}"></strong></p>
+
+    <div class="message" th:if="${souvenir != null}" th:text="${souvenir}"></div>
+    <div class="message" th:if="${makan != null}" th:text="${makan}"></div>
+    <div class="message" th:if="${snack != null}" th:text="${snack}"></div>
+    <div class="message" th:if="${info != null}" th:text="${info}"></div>
+</div>
+</body>
+</html>

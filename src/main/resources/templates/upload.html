@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Upload Excel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header text-white bg-primary">
+            <h4 class="mb-0">Upload Excel File</h4>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/upload}" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="file" class="form-label">Pilih file Excel (.xlsx)</label>
+                    <input class="form-control" type="file" name="file" id="file" accept=".xlsx" required>
+                </div>
+                <button class="btn btn-success" type="submit">Upload</button>
+            </form>
+        </div>
+        <div class="card-footer">
+            <p class="text-muted">File harus format <strong>.xlsx</strong> dan memiliki kolom: <code>Npk</code>, <code>Name</code></p>
+        </div>
+    </div>
+
+    <div class="mt-4" th:if="${message}">
+        <div class="alert alert-info" th:text="${message}"></div>
+    </div>
+
+    <div class="mt-3" th:if="${data}">
+        <h5>Data yang Disimpan:</h5>
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>No</th>
+                <th>Npk</th>
+                <th>Nama</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p, iterStat : ${data}">
+                <td th:text="${iterStat.index + 1}"></td>
+                <td th:text="${p.nik}"></td>
+                <td th:text="${p.name}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

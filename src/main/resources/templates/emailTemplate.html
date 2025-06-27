@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { padding: 20px; }
+        .bold { font-weight: bold; }
+        .qr { margin: 20px 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <p><span class="bold">Dear </span> {{nama}}({{nik}}),</p>
+    <p><span class="bold">Bagian: </span> {{division}},</p>
+
+    <p>Selamat Anda terundang untuk hadir dalam acara Anniversary 40 Tahun PT. KAO Indonesia.
+<br></p>
+
+    <p>
+        <strong>Lokasi</strong> : Pantai Festival Ancol<br>
+        <strong>Waktu</strong> : Sabtu, 5 Juli 2025<br>
+        <strong>Participant ID</strong> : {{id}}
+    </p>
+
+    <div class="qr">
+        <strong>Kode QR :</strong><br>
+        <img src="cid:qrImage" width="150"/>
+    </div>
+
+    <p><strong>Tunjukkan Kode QR diatas untuk registrasi, pengambilan souvenir, makan siang dan snack sore.</strong></p>
+
+    <p>Kami lampirkan juga tiket masuk ancol, dufan dan tiket mobil / motor (bagi yang terdaftar membawa kendaraan pribadi) sesuai dengan jumlah keluarga Anda.</p></br>
+
+    <p>Sampai jumpa di acara Anniversary 40 Tahun PT. KAO Indonesia.</p>
+
+    <p>Setiap QR code menggunakan kode unik tersendiri dan berlaku hanya untuk penerima email beserta keluarga yang telah terdaftar. Mohon untuk tidak membagikan email ini kepada orang lain yang tidak berkepentingan.</p>
+
+    <p>Terima kasih dan Salam.</p>
+
+<!--    <br>-->
+<!--    <p><strong>Greetings</strong> {{nama}}</p>-->
+</div>
+</body>
+</html>
