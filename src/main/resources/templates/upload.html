@@ -20,7 +20,7 @@
             </form>
         </div>
         <div class="card-footer">
-            <p class="text-muted">File harus format <strong>.xlsx</strong> dan memiliki kolom: <code>Npk</code>, <code>Name</code></p>
+            <p class="text-muted">File harus format <strong>.xlsx</strong> dan memiliki kolom: <code>Nik</code>, <code>Name</code></p>
         </div>
     </div>
 
@@ -34,8 +34,11 @@
             <thead>
             <tr>
                 <th>No</th>
-                <th>Npk</th>
+                <th>Nik</th>
                 <th>Nama</th>
+                <th>Tiket Ancol</th>
+                <th>Motor</th>
+                <th>Mobil</th>
             </tr>
             </thead>
             <tbody>
@@ -43,6 +46,9 @@
                 <td th:text="${iterStat.index + 1}"></td>
                 <td th:text="${p.nik}"></td>
                 <td th:text="${p.name}"></td>
+                <td th:text="${p.totalTicketAncol}"></td>
+                <td th:text="${p.motor}"></td>
+                <td th:text="${p.mobil}"></td>
             </tr>
             </tbody>
         </table>

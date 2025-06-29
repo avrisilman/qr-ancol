@@ -22,6 +22,8 @@ public class ExcelController {
 
     @GetMapping("/")
     public String home(Model model) {
+        List<Person> data = personRepository.findAll();
+        model.addAttribute("data", data);
         return "upload";
     }
 

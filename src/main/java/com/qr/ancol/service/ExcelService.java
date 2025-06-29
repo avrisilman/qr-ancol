@@ -2,6 +2,7 @@ package com.qr.ancol.service;
 
 import com.qr.ancol.entity.Person;
 import com.qr.ancol.repository.PersonRepository;
+import com.qr.ancol.util.FileIndexTracker;
 import com.qr.ancol.util.QrCodeGenerator;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -18,6 +19,8 @@ import java.util.*;
 @Service
 public class ExcelService {
 
+    private static final List<String> FILE_EXTENSIONS = Arrays.asList(".pdf", ".png", ".jpg", ".jpeg");
+
     @Autowired
     private PersonRepository personRepository;
 
@@ -29,9 +32,9 @@ public class ExcelService {
         int skipped = 0;
         int sent = 0;
 
-        int currentAncolIndex = 1;
-        int currentMobilIndex = 1;
-        int currentMotorIndex = 1;
+        int currentAncolIndex = FileIndexTracker.currentAncolIndex;
+        int currentMobilIndex = FileIndexTracker.currentMobilIndex;
+        int currentMotorIndex = FileIndexTracker.currentMotorIndex;
 
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
@@ -69,7 +72,7 @@ public class ExcelService {
                     double totalYears = period.getYears() + (period.getMonths() / 12.0);
                     lamaKerja = String.format(Locale.US, "%.1f", totalYears);
                 } catch (Exception ex) {
-                    System.err.println("⚠️ Gagal parsing tanggalJoin: " + tanggalJoin);
+                    System.err.println("\u26A0\uFE0F Gagal parsing tanggalJoin: " + tanggalJoin);
                     lamaKerja = "0";
                 }
 
@@ -108,57 +111,57 @@ public class ExcelService {
                 List<File> motorFiles = new ArrayList<>();
 
                 for (int i = 0; i < jumlahAncol; i++) {
-                    File f = new File("qr-tiket/in/ancol_" + currentAncolIndex + ".pdf");
-                   // File f = new File("D:/project/qr-ancol/qr-tiket/in/ancol_" + currentAncolIndex + ".pdf");
-                    if (f.exists()) ancolFiles.add(f);
-                    else System.err.println("❌ File Ancol tidak ditemukan: " + f.getAbsolutePath());
+                    File f = findFileWithExtensions("qr-tiket/in/ancol_" + currentAncolIndex);
+                    if (f != null) ancolFiles.add(f);
+                    else System.err.println("\u274C File Ancol tidak ditemukan untuk index: " + currentAncolIndex);
                     currentAncolIndex++;
                 }
 
                 for (int i = 0; i < jumlahMobil; i++) {
-                    File f = new File("qr-mobil/in/mobil_" + currentMobilIndex + ".png");
-                    //  File f = new File("D:/project/qr-ancol/qr-mobil/in/mobil_" + currentMobilIndex + ".png");
-                    if (f.exists()) mobilFiles.add(f);
-                    else System.err.println("❌ File Mobil tidak ditemukan: " + f.getAbsolutePath());
+                    File f = findFileWithExtensions("qr-mobil/in/mobil_" + currentMobilIndex);
+                    if (f != null) mobilFiles.add(f);
+                    else System.err.println("\u274C File Mobil tidak ditemukan untuk index: " + currentMobilIndex);
                     currentMobilIndex++;
                 }
 
                 for (int i = 0; i < jumlahMotor; i++) {
-                    File f = new File("qr-motor/in/motor_" + currentMotorIndex + ".png");
-                    //File f = new File("/Users/admmtg/data/qr-ancol/qr-motor/in/motor_" + currentMotorIndex + ".png");
-                   // File f = new File("D:/project/qr-ancol/qr-motor/in/motor_" + currentMotorIndex + ".png");
-                    if (f.exists()) motorFiles.add(f);
-                    else System.err.println("❌ File Motor tidak ditemukan: " + f.getAbsolutePath());
+                    File f = findFileWithExtensions("qr-motor/in/motor_" + currentMotorIndex);
+                    if (f != null) motorFiles.add(f);
+                    else System.err.println("\u274C File Motor tidak ditemukan untuk index: " + currentMotorIndex);
                     currentMotorIndex++;
                 }
 
                 try {
                     File qrFile = QrCodeGenerator.generateQrCode(String.valueOf(savedPerson.getId()), nik);
                     if (email != null && !email.trim().isEmpty()) {
-                        emailService.sendEmailWithTemplateAndQrAndAttachment(savedPerson.getId(), email, name, nik, division, qrFile, ancolFiles, mobilFiles, motorFiles);
+                        emailService.sendEmailWithTemplateAndQrAndAttachment(
+                                savedPerson.getId(), email, name, nik, division,
+                                qrFile, ancolFiles, mobilFiles, motorFiles
+                        );
                         sent++;
 
-                        ancolFiles.forEach(f -> moveFileToOut(f, "qr-tiket/out/"));
-                        mobilFiles.forEach(f -> moveFileToOut(f, "qr-mobil/out/"));
-                        motorFiles.forEach(f -> moveFileToOut(f, "qr-motor/out/"));
-//                        ancolFiles.forEach(f -> moveFileToOut(f, "D:/project/qr-ancol/qr-tiket/out/"));
-//                        mobilFiles.forEach(f -> moveFileToOut(f, "D:/project/qr-ancol/qr-mobil/out/"));
-//                        motorFiles.forEach(f -> moveFileToOut(f, "D:/project/qr-ancol/qr-motor/out/"));
+                        moveFiles(ancolFiles, "qr-tiket/out/");
+                        moveFiles(mobilFiles, "qr-mobil/out/");
+                        moveFiles(motorFiles, "qr-motor/out/");
                     } else {
-                        System.err.println("⚠️ Email kosong untuk NIK: " + nik);
+                        System.err.println("\u26A0\uFE0F Email kosong untuk NIK: " + nik);
                     }
                 } catch (Exception e) {
-                    System.err.println("❌ Gagal kirim email ke: " + email + " untuk NIK: " + nik);
+                    System.err.println("\u274C Gagal kirim email ke: " + email + " untuk NIK: " + nik);
                     e.printStackTrace();
                 }
             }
 
+            FileIndexTracker.currentAncolIndex = currentAncolIndex;
+            FileIndexTracker.currentMobilIndex = currentMobilIndex;
+            FileIndexTracker.currentMotorIndex = currentMotorIndex;
+
         } catch (Exception e) {
             e.printStackTrace();
-            return "❌ Gagal proses file: " + e.getMessage();
+            return "\u274C Gagal proses file: " + e.getMessage();
         }
 
-        return "✅ Berhasil menyimpan " + saved + " data, kirim email " + sent + ", dilewati " + skipped + " data.";
+        return "\u2705 Berhasil menyimpan " + saved + " data, kirim email " + sent + ", dilewati " + skipped + " data.";
     }
 
     private int parseIntSafe(String s) {
@@ -169,15 +172,22 @@ public class ExcelService {
         }
     }
 
-    private void moveFileToOut(File file, String outDirPath) {
-        File outDir = new File(outDirPath);
-        if (!outDir.exists()) outDir.mkdirs();
-        File movedFile = new File(outDir, file.getName());
-        if (!file.renameTo(movedFile)) {
-            System.err.println("❗ Gagal memindahkan file: " + file.getAbsolutePath());
+    private File findFileWithExtensions(String basePath) {
+        for (String ext : FILE_EXTENSIONS) {
+            File file = new File(basePath + ext);
+            if (file.exists()) return file;
         }
+        return null;
     }
 
-
-
+    private void moveFiles(List<File> files, String outDirPath) {
+        File outDir = new File(outDirPath);
+        if (!outDir.exists()) outDir.mkdirs();
+        for (File file : files) {
+            File movedFile = new File(outDir, file.getName());
+            if (!file.renameTo(movedFile)) {
+                System.err.println("\u2757 Gagal memindahkan file: " + file.getAbsolutePath());
+            }
+        }
+    }
 }
