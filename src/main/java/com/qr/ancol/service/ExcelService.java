@@ -2,13 +2,13 @@ package com.qr.ancol.service;
 
 import com.qr.ancol.entity.Person;
 import com.qr.ancol.repository.PersonRepository;
-import com.qr.ancol.util.FileIndexTracker;
 import com.qr.ancol.util.QrCodeGenerator;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.File;
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -27,14 +27,13 @@ public class ExcelService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private FileIndexTrackerService fileIndexTrackerService;
+
     public String readAndSaveExcel(MultipartFile file) {
         int saved = 0;
         int skipped = 0;
         int sent = 0;
-
-        int currentAncolIndex = FileIndexTracker.currentAncolIndex;
-        int currentMobilIndex = FileIndexTracker.currentMobilIndex;
-        int currentMotorIndex = FileIndexTracker.currentMotorIndex;
 
         try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
@@ -106,29 +105,30 @@ public class ExcelService {
                 int jumlahMobil = parseIntSafe(mobil);
                 int jumlahMotor = parseIntSafe(motor);
 
+                int currentAncolIndex = fileIndexTrackerService.getNextIndex("ancol", jumlahAncol);
+                int currentMobilIndex = fileIndexTrackerService.getNextIndex("mobil", jumlahMobil);
+                int currentMotorIndex = fileIndexTrackerService.getNextIndex("motor", jumlahMotor);
+
                 List<File> ancolFiles = new ArrayList<>();
                 List<File> mobilFiles = new ArrayList<>();
                 List<File> motorFiles = new ArrayList<>();
 
                 for (int i = 0; i < jumlahAncol; i++) {
-                    File f = findFileWithExtensions("qr-tiket/in/ancol_" + currentAncolIndex);
+                    File f = findFileWithExtensions("qr-tiket/in/ancol_" + (currentAncolIndex + i));
                     if (f != null) ancolFiles.add(f);
-                    else System.err.println("\u274C File Ancol tidak ditemukan untuk index: " + currentAncolIndex);
-                    currentAncolIndex++;
+                    else System.err.println("\u274C File Ancol tidak ditemukan untuk index: " + (currentAncolIndex + i));
                 }
 
                 for (int i = 0; i < jumlahMobil; i++) {
-                    File f = findFileWithExtensions("qr-mobil/in/mobil_" + currentMobilIndex);
+                    File f = findFileWithExtensions("qr-mobil/in/mobil_" + (currentMobilIndex + i));
                     if (f != null) mobilFiles.add(f);
-                    else System.err.println("\u274C File Mobil tidak ditemukan untuk index: " + currentMobilIndex);
-                    currentMobilIndex++;
+                    else System.err.println("\u274C File Mobil tidak ditemukan untuk index: " + (currentMobilIndex + i));
                 }
 
                 for (int i = 0; i < jumlahMotor; i++) {
-                    File f = findFileWithExtensions("qr-motor/in/motor_" + currentMotorIndex);
+                    File f = findFileWithExtensions("qr-motor/in/motor_" + (currentMotorIndex + i));
                     if (f != null) motorFiles.add(f);
-                    else System.err.println("\u274C File Motor tidak ditemukan untuk index: " + currentMotorIndex);
-                    currentMotorIndex++;
+                    else System.err.println("\u274C File Motor tidak ditemukan untuk index: " + (currentMotorIndex + i));
                 }
 
                 try {
@@ -151,10 +151,6 @@ public class ExcelService {
                     e.printStackTrace();
                 }
             }
-
-            FileIndexTracker.currentAncolIndex = currentAncolIndex;
-            FileIndexTracker.currentMobilIndex = currentMobilIndex;
-            FileIndexTracker.currentMotorIndex = currentMotorIndex;
 
         } catch (Exception e) {
             e.printStackTrace();
