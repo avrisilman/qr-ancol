@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>Scan Tiket</title>
     <style>
         body {
@@ -84,26 +85,97 @@
 <div class="card">
     <h2>Scan Tiket</h2>
 
-    <form th:action="@{/scan-qr}" method="get">
-        <label for="id">ID Tiket</label>
-        <input type="number" name="id" id="id" placeholder="Contoh: 1001" required />
-
+    <form id="scanForm" th:action="@{/scan-qr}" method="post">
         <label for="type">Tipe Tiket</label>
-        <select name="type" id="type" required>
+        <select name="type" id="type" required autofocus>
             <option value="">-- Pilih Tipe --</option>
-            <option value="1">Souvenir</option>
-            <option value="2">Makan</option>
-            <option value="3">Snack</option>
+            <option value="1" th:selected="${type == 1}">Souvenir</option>
+            <option value="2" th:selected="${type == 2}">Makan</option>
+            <option value="3" th:selected="${type == 3}">Snack</option>
         </select>
+
+        <label for="id">ID Tiket</label>
+        <input type="number" name="id" id="id" placeholder="Contoh: 1001" required th:value="${id}" />
 
         <button type="submit">Proses</button>
     </form>
 
-    <!-- Hasil ditampilkan jika ada -->
-    <div th:if="${hasil != null}"
-         th:class="'alert ' + (${hasil.contains('✅')} ? 'alert-success' : 'alert-error')"
-         th:text="${hasil}">
-    </div>
+    <div id="hasilMessage"></div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('scanForm');
+        const inputId = document.getElementById('id');
+        const typeSelect = document.getElementById('type');
+        const hasilDiv = document.getElementById('hasilMessage');
+        let timeout = null;
+
+        function submitData() {
+            const idVal = inputId.value.trim();
+            const typeVal = typeSelect.value;
+
+            if (!typeVal) {
+                alert("❗ Pilih tipe tiket dulu!");
+                typeSelect.focus();
+                inputId.value = '';
+                return;
+            }
+
+            if (idVal !== '') {
+                fetch('/scan-qr-ajax', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `id=${idVal}&type=${typeVal}`
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const hasil = data.hasil;
+                        hasilDiv.textContent = hasil;
+                        hasilDiv.className = 'alert ' + (hasil.includes('✅') ? 'alert-success' : 'alert-error');
+
+                        inputId.value = '';
+                        inputId.focus();
+                    })
+                    .catch(error => {
+                        hasilDiv.textContent = '❌ Terjadi kesalahan sistem.';
+                        hasilDiv.className = 'alert alert-error';
+                    });
+            }
+        }
+
+
+        inputId.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(submitData, 700);
+        });
+
+
+        inputId.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                clearTimeout(timeout);
+                submitData();
+            }
+        });
+
+
+        if (!typeSelect.value) {
+            typeSelect.focus();
+        } else {
+            inputId.focus();
+        }
+
+
+        document.body.addEventListener('click', () => {
+            if (!typeSelect.value) {
+                typeSelect.focus();
+            } else {
+                inputId.focus();
+            }
+        });
+    });
+</script>
 </body>
 </html>

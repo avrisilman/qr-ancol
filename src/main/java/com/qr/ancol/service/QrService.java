@@ -15,6 +15,10 @@ public class QrService {
     private PersonRepository personRepository;
 
     public void postTiketByDate(Long id, Long type, Model model) {
+        model.addAttribute("hasil", postTiketByDateAjax(id, type));
+    }
+
+    public String postTiketByDateAjax(Long id, Long type) {
         Optional<Person> p = personRepository.findById(id);
 
         if (p.isPresent()) {
@@ -24,21 +28,20 @@ public class QrService {
             if (type.equals(1L) && person.getDateSouvenir() == null) {
                 person.setDateSouvenir(now);
                 personRepository.save(person);
-                model.addAttribute("hasil", "✅ Tiket Souvenir berhasil untuk: " + person.getName());
+                return "✅ Tiket Souvenir berhasil untuk: " + person.getName();
             } else if (type.equals(2L) && person.getDateMakan() == null) {
                 person.setDateMakan(now);
                 personRepository.save(person);
-                model.addAttribute("hasil", "✅ Tiket Makan berhasil untuk: " + person.getName());
+                return "✅ Tiket Makan berhasil untuk: " + person.getName();
             } else if (type.equals(3L) && person.getDateSnack() == null) {
                 person.setDateSnack(now);
                 personRepository.save(person);
-                model.addAttribute("hasil", "✅ Tiket Snack berhasil untuk: " + person.getName());
+                return "✅ Tiket Snack berhasil untuk: " + person.getName();
             } else {
-                model.addAttribute("hasil", "❌ Tiket sudah pernah digunakan atau tipe tidak valid.");
+                return "❌ Tiket sudah pernah digunakan atau tipe tidak valid.";
             }
         } else {
-            model.addAttribute("hasil", "❌ Gagal! ID " + id + " tidak ditemukan.");
+            return "❌ Gagal! ID " + id + " tidak ditemukan.";
         }
     }
-
 }
